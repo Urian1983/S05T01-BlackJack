@@ -1,9 +1,3 @@
-Understood. I'll keep it strictly to the text and structure for the README.md.
-
-Since this is for the IT Academy, I have polished the language to be more professional and academically structured, ensuring it highlights the "Reactive" and "Polyglot" aspects which are usually the key grading criteria for this specific task.
-
-Here is the finalized version for your repository:
-
 🃏 S05T01-BlackJack | IT Academy Backend Java
 This repository contains the official solution for Spring 5 Task 1 (S05T01) of the Backend Java curriculum at IT Academy. This project demonstrates the implementation of a Reactive REST API using Spring Boot WebFlux, integrated with a polyglot persistence layer.
 
@@ -96,7 +90,9 @@ PUT /player/{id}: Edit player credentials.
 DELETE /game/{id}/delete: Remove specific game records.
 
 🐳 Docker Deployment
-The application is container-ready. You can run it directly from Docker Hub:
+The application is container-ready. You can find the official image repository here: 👉 Docker Hub: urian1983/blackjack-backend
+
+To run it directly:
 
 Bash
 # Pull the latest image
