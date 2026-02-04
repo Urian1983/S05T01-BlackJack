@@ -1,5 +1,6 @@
 package it.academy.blackjack.service.mysql;
 
+import it.academy.blackjack.domain.enums.GameState;
 import it.academy.blackjack.domain.model.PlayerRanking;
 import it.academy.blackjack.dto.PlayerRankingDTO;
 import it.academy.blackjack.exceptions.GameNotFoundException;
@@ -17,7 +18,7 @@ public class RankingService {
     private final RankingRepository rankingRepository;
     private final GameMapper gameMapper;
 
-    public Mono<PlayerRankingDTO> updateRanking(String playerName) {
+    /*public Mono<PlayerRankingDTO> updateRanking(String playerName) {
         return rankingRepository.findByPlayerName(playerName)
                 .flatMap(ranking -> {
                     ranking.setGamesWon(ranking.getGamesWon() + 1);
@@ -26,6 +27,35 @@ public class RankingService {
                 .switchIfEmpty(Mono.defer(() -> {
                     PlayerRanking newRanking = new PlayerRanking();
                     newRanking.setPlayerName(playerName); // USAR setPlayerName
+                    newRanking.setGamesWon(1);
+                    return rankingRepository.save(newRanking);
+                }))
+                .map(gameMapper::playerRankingResponse);
+    }*/
+
+    public Mono<PlayerRankingDTO> updateRanking(String playerName, GameState state) {
+        boolean playerWon = "PLAYER_WIN".equals(state) || "DEALER_BUST".equals(state);
+
+        if (!playerWon) {
+            return rankingRepository.findByPlayerName(playerName)
+                    .map(gameMapper::playerRankingResponse)
+                    .switchIfEmpty(Mono.defer(() -> {
+                        PlayerRanking newRanking = new PlayerRanking();
+                        newRanking.setPlayerName(playerName);
+                        newRanking.setGamesWon(0);
+                        return rankingRepository.save(newRanking)
+                                .map(gameMapper::playerRankingResponse);
+                    }));
+        }
+
+        return rankingRepository.findByPlayerName(playerName)
+                .flatMap(ranking -> {
+                    ranking.setGamesWon(ranking.getGamesWon() + 1);
+                    return rankingRepository.save(ranking);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    PlayerRanking newRanking = new PlayerRanking();
+                    newRanking.setPlayerName(playerName);
                     newRanking.setGamesWon(1);
                     return rankingRepository.save(newRanking);
                 }))

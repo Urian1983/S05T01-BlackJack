@@ -118,10 +118,10 @@ public class GameService {
         return gameRepository.save(game)
                 .flatMap(savedGame -> {
                     if (savedGame.getState() == GameState.PLAYER_WIN) {
-                        return rankingService.updateRanking(savedGame.getPlayer().getName())
+                        return rankingService.updateRanking(savedGame.getPlayer().getName(),savedGame.getState())
                                 .thenReturn(savedGame);
                     } else if (savedGame.getState() == GameState.DEALER_WIN || savedGame.getState() == GameState.DEALER_BUST) {
-                        return rankingService.updateRanking(savedGame.getDealer().getName())
+                        return rankingService.updateRanking(savedGame.getDealer().getName(),savedGame.getState())
                                 .thenReturn(savedGame);
                     } else {
                         return Mono.just(savedGame);

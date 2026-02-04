@@ -17,9 +17,10 @@ public interface GameMapper {
     @Mapping(target = "playerValue", source = "player.hand.value")
     @Mapping(target = "dealerHand", source = "dealer.hand.cards")
     @Mapping(target = "dealerValue", source = "dealer.hand.value")
-    @Mapping(target = "status", source = "state") // 'state' en dominio -> 'status' en DTO [cite: 8]
+    @Mapping(target = "gameState", source = "state")
     GameResponseDTO toDTO(Game game);
 
     PlayerRankingDTO playerRankingResponse(PlayerRanking ranking);
+
     CardDTO toCardDTO(Card card);
 }

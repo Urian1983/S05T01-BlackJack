@@ -43,7 +43,7 @@ public class GameController {
                     }
                     return gameService.createGame(auth.getName());
                 })
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no encontrado en el contexto")));
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found")));
     }
 
     @PostMapping("/{id}/hit")

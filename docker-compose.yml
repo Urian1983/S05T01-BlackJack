@@ -33,9 +33,6 @@ services:
     depends_on:
       - mongodb
       - mysql
-      -
-
-
 
 volumes:
   mongo_data:

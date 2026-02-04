@@ -46,7 +46,7 @@ public class RankingController {
     }
 
 
-    @PostMapping("/update-from-game")
+    /*@PostMapping("/update-from-game")
     @Operation(summary = "Updates the ranking of a player based on a finished game")
     @ApiResponse(
             responseCode = "200",
@@ -56,6 +56,17 @@ public class RankingController {
     public Mono<PlayerRankingDTO> updateRankingFromGame(@RequestBody GameResponseDTO gameResponse) {
         String playerName = gameResponse.getPlayerName();
         return rankingService.updateRanking(playerName);
+    }*/
+
+    @PostMapping("/update-from-game")
+    @Operation(summary = "Updates the ranking of a player based on a finished game")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Player ranking updated",
+            content = @Content(schema = @Schema(implementation = PlayerRankingDTO.class))
+    )
+    public Mono<PlayerRankingDTO> updateRankingFromGame(@RequestBody GameResponseDTO gameResponse) {
+        return rankingService.updateRanking(gameResponse.getPlayerName(), gameResponse.getGameState());
     }
 
 

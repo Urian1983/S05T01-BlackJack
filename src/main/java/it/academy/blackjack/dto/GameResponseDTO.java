@@ -1,6 +1,7 @@
 package it.academy.blackjack.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.academy.blackjack.domain.enums.GameState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,5 +31,5 @@ public class GameResponseDTO {
     private int dealerValue;
 
     @Schema(description = "Current state of the gameplay", example = "IN_PROGRESS")
-    private String status;
+    private GameState gameState;
 }
