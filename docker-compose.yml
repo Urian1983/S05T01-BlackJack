@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Base de datos para el Juego (NoSQL)
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # Base de datos para el Ranking (SQL)
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: blackjack
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Tu Aplicación Blackjack
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/blackjack
+      - SPRING_R2DBC_URL=r2dbc:mysql://mysql:3306/blackjack
+      - SPRING_R2DBC_USERNAME=root
+      - SPRING_R2DBC_PASSWORD=root
+    depends_on:
+      - mongodb
+      - mysql
+
+volumes:
+  mongo_data:
+  mysql_data:
