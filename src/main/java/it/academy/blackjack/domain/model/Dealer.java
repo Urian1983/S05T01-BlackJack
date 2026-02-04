@@ -1,12 +1,13 @@
 package it.academy.blackjack.domain.model;
 
-import lombok.Data;
+
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
+@NoArgsConstructor
 @Setter
-@Data
 public class Dealer extends Player{
     public Dealer(Hand hand) {
         super("Dealer", hand);

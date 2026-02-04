@@ -3,22 +3,23 @@ package it.academy.blackjack.domain.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-@Table(name="player_ranking")
+@Table("player_ranking")
 public class PlayerRanking {
 
     @Id
     private Long id;
 
+    @Column("player_name")
     @Schema(description = "Name of the player", example = "John Doe")
     private String playerName;
 
+    @Column("games_won")
     @Schema(description = "Number of gameplays won by the player", example = "15")
-    private int gamesWon;
+    private Integer gamesWon;
 }

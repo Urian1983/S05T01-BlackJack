@@ -5,13 +5,13 @@ import it.academy.blackjack.dto.PlayerRankingDTO;
 import it.academy.blackjack.exceptions.GameNotFoundException;
 import it.academy.blackjack.mapper.GameMapper;
 import it.academy.blackjack.repository.mysql.RankingRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class RankingService {
 
     private final RankingRepository rankingRepository;
@@ -36,7 +36,7 @@ public class RankingService {
         return rankingRepository.findById(playerId)
                 .switchIfEmpty(Mono.error(new GameNotFoundException("Player not found with ID: " + playerId)))
                 .flatMap(player -> {
-                    player.setPlayerName(newName); // USAR setPlayerName
+                    player.setPlayerName(newName);
                     return rankingRepository.save(player);
                 })
                 .map(gameMapper::playerRankingResponse);
@@ -46,4 +46,6 @@ public class RankingService {
         return rankingRepository.findAllByOrderByGamesWonDesc()
                 .map(gameMapper::playerRankingResponse);
     }
+
+
 }

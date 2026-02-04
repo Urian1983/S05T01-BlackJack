@@ -11,7 +11,10 @@ import it.academy.blackjack.service.mongodb.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -29,9 +32,18 @@ public class GameController {
             description = "New gameplay created",
             content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
     )
+
     @PostMapping("/new")
-    public Mono<GameResponseDTO> start(Authentication authentication) {
-        return gameService.createGame(authentication.getName());
+    public Mono<GameResponseDTO> start() {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .flatMap(auth -> {
+                    if (auth == null || !auth.isAuthenticated()) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+                    }
+                    return gameService.createGame(auth.getName());
+                })
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no encontrado en el contexto")));
     }
 
     @PostMapping("/{id}/hit")

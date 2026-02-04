@@ -2,14 +2,18 @@ package it.academy.blackjack.domain.model;
 
 import it.academy.blackjack.domain.enums.Rank;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
+@NoArgsConstructor
 public class Hand {
 
-    private final List<Card> cards = new ArrayList<>();
+    private List<Card> cards = new ArrayList<>();
 
     public void addCard(Card card) {
         if(card !=null)
@@ -19,6 +23,7 @@ public class Hand {
     public int calculateValue(){
 
         int total = cards.stream()
+                .filter(card -> card.getRank() != null)
                 .mapToInt(card -> card.getRank().getValue())
                 .sum();
 

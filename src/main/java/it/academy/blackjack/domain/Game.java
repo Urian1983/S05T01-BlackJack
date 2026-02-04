@@ -7,18 +7,23 @@ import it.academy.blackjack.domain.model.Hand;
 import it.academy.blackjack.domain.model.Player;
 import it.academy.blackjack.exceptions.IllegalMoveException;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.UUID;
 
+@NoArgsConstructor
 @Getter
 @Document(collection="game")
 public class Game {
     private Player player;
     private Dealer dealer;
     private Deck deck;
-    private GameState state= GameState.IN_PROGRESS;
+    private GameState state;
+
+    @Id
+    private String id = UUID.randomUUID().toString();
 
     public Game(String playerName){
         this.deck = new Deck();
@@ -46,9 +51,6 @@ public class Game {
         }
 
     }
-
-    @Id
-    private String id = UUID.randomUUID().toString();
 
     public void playerHit(){
         if (state != GameState.IN_PROGRESS) {

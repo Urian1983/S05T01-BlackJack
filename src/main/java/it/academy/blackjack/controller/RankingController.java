@@ -5,7 +5,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.academy.blackjack.domain.Game;
+import it.academy.blackjack.dto.GameResponseDTO;
 import it.academy.blackjack.dto.PlayerRankingDTO;
+import it.academy.blackjack.dto.RenamePlayerRequest;
 import it.academy.blackjack.service.mysql.RankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -37,9 +40,24 @@ public class RankingController {
     @ApiResponse(
             responseCode = "200",
             description = "Player name updated",
+            content = @Content(schema = @Schema(implementation = PlayerRankingDTO.class)))
+    public Mono<PlayerRankingDTO> updatePlayer(@PathVariable Long playerId, @RequestBody RenamePlayerRequest request) {
+        return rankingService.renamePlayer(playerId, request.newName());
+    }
+
+
+    @PostMapping("/update-from-game")
+    @Operation(summary = "Updates the ranking of a player based on a finished game")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Player ranking updated",
             content = @Content(schema = @Schema(implementation = PlayerRankingDTO.class))
     )
-    public Mono<PlayerRankingDTO> updatePlayer(@PathVariable Long playerId, @RequestBody String newName) {
-        return rankingService.renamePlayer(playerId, newName);
+    public Mono<PlayerRankingDTO> updateRankingFromGame(@RequestBody GameResponseDTO gameResponse) {
+        String playerName = gameResponse.getPlayerName();
+        return rankingService.updateRanking(playerName);
     }
+
+
+
 }

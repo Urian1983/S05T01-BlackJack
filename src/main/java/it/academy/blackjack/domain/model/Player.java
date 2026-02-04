@@ -2,19 +2,21 @@ package it.academy.blackjack.domain.model;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Data
 @Getter
+@NoArgsConstructor
 @Setter
 public class Player {
-    private final String name;
+    private String name;
     private Hand hand;
     private boolean stay = false;
 
     public Player(String name, Hand hand) {
         this.name = name;
-        this.hand = new Hand();
+        this.hand = hand !=null ? hand: new Hand();
         this.stay = false;
     }
 
@@ -23,7 +25,7 @@ public class Player {
     }
 
     public void stand(){
-        this.stay = !this.stay;
+        this.stay = true;
     }
 
     public int getScore(){

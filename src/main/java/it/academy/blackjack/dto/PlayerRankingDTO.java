@@ -1,4 +1,17 @@
 package it.academy.blackjack.dto;
 
-public record PlayerRankingDTO (String playerName, int gamesWon) {
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class PlayerRankingDTO
+{
+    private String playerName;
+    private int gamesWon;
 }
