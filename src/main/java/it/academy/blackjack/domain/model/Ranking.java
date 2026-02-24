@@ -17,7 +17,7 @@ public class Ranking {
 
     @Column("player_name")
     @Schema(description = "Name of the player", example = "John Doe")
-    private String playerName;
+    private String playerName = "newPlayer";
 
     @Column("games_won")
     @Schema(description = "Number of gameplays won by the player", example = "15")

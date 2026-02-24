@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

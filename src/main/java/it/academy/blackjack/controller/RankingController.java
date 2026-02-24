@@ -38,8 +38,8 @@ public class RankingController {
             description = "Player name updated",
             content = @Content(schema = @Schema(implementation = RankingResponseDTO.class))
     )
-    public Mono<RankingResponseDTO> updatePlayer(@PathVariable Long playerId, @RequestParam String newName) {
-        return rankingService.renamePlayer(playerId, newName);
+    public Mono<RankingResponseDTO> updatePlayer(@RequestParam String oldName, String newName) {
+        return rankingService.renamePlayer(oldName, newName);
     }
     }
 

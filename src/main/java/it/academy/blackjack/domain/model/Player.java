@@ -10,11 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Player {
-    private String name;
+    private String name = "New Player";
     private Hand hand;
     private boolean stay = false;
 
     public Player(String name, Hand hand) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name can't be empty");
+        }
         this.name = name;
         this.hand = hand != null ? hand : new Hand();
     }

@@ -52,9 +52,9 @@ public class RankingServiceImpl implements RankingService {
     }
 
     @Override
-    public Mono<RankingResponseDTO> renamePlayer(Long playerId, String newName) {
-        return rankingRepository.findById(playerId)
-                .switchIfEmpty(Mono.error(new GameNotFoundException("Player not found with ID: " + playerId)))
+    public Mono<RankingResponseDTO> renamePlayer(String oldName, String newName) {
+        return rankingRepository.findByPlayerName(oldName)
+                .switchIfEmpty(Mono.error(new GameNotFoundException("Player not found with name: " + oldName)))
                 .flatMap(ranking -> {
                     ranking.setPlayerName(newName);
                     return rankingRepository.save(ranking);

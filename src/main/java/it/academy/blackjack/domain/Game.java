@@ -105,6 +105,8 @@ public class Game {
             dealer.getHand().addCard(deck.draw());
         }
 
+        dealer.stand();
+
         if(dealer.getHand().isBust()){
             this.state = GameState.DEALER_BUST;
         }

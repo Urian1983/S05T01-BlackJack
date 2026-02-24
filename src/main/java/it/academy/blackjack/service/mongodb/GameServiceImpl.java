@@ -30,13 +30,15 @@ public class GameServiceImpl implements GameService {
                 .map(gameMapper::toDTO);
     }
 
-    @Override
     public Mono<GameResponseDTO> playerHit(String id) {
         return gameRepository.findById(id)
                 .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with ID: " + id)))
                 .flatMap(game -> {
-                    game.playerHit();
-                    return handleGameEnd(game);
+                    return Mono.fromCallable(() -> {
+                                game.playerHit();
+                                return game;
+                            })
+                            .flatMap(this::handleGameEnd);
                 });
     }
 
@@ -45,8 +47,11 @@ public class GameServiceImpl implements GameService {
         return gameRepository.findById(id)
                 .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with ID: " + id)))
                 .flatMap(game -> {
-                    game.playerStand();
-                    return handleGameEnd(game);
+                    return Mono.fromCallable(() -> {
+                                game.playerStand();
+                                return game;
+                            })
+                            .flatMap(this::handleGameEnd);
                 });
     }
 
@@ -55,8 +60,11 @@ public class GameServiceImpl implements GameService {
         return gameRepository.findById(id)
                 .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with ID: " + id)))
                 .flatMap(game -> {
-                    game.playerDoubleDown();
-                    return handleGameEnd(game);
+                    return Mono.fromCallable(() -> {
+                                game.playerDoubleDown();
+                                return game;
+                            })
+                            .flatMap(this::handleGameEnd);
                 });
     }
 
@@ -71,16 +79,16 @@ public class GameServiceImpl implements GameService {
     private Mono<GameResponseDTO> handleGameEnd(Game game) {
         return gameRepository.save(game)
                 .flatMap(savedGame -> {
-                    if (savedGame.getState() == GameState.PLAYER_WIN) {
+                    if (savedGame.getState() == GameState.PLAYER_WIN || savedGame.getState() == GameState.DEALER_BUST) {
                         return rankingService.updateRanking(savedGame.getPlayer().getName(), savedGame.getState())
                                 .thenReturn(savedGame);
-                    } else if (savedGame.getState() == GameState.DEALER_WIN || savedGame.getState() == GameState.DEALER_BUST) {
-                        return rankingService.updateRanking(savedGame.getDealer().getName(), savedGame.getState())
-                                .thenReturn(savedGame);
+                    } else if (savedGame.getState() == GameState.DEALER_WIN || savedGame.getState() == GameState.PLAYER_BUST) {
+                        return Mono.just(savedGame);
                     } else {
                         return Mono.just(savedGame);
                     }
                 })
                 .map(gameMapper::toDTO);
     }
+
 }
