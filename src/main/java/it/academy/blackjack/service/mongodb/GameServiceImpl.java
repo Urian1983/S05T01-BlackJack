@@ -43,6 +43,14 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
+    public Mono<GameResponseDTO> getGame(String id) {
+        return gameRepository.findById(id)
+                .map(gameMapper::toDTO)
+                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with ID: "+id))
+                );
+    }
+
+    @Override
     public Mono<GameResponseDTO> playerStand(String id) {
         return gameRepository.findById(id)
                 .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with ID: " + id)))

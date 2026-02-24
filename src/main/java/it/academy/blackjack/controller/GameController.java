@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.academy.blackjack.dto.game.GameResponseDTO;
 import it.academy.blackjack.service.mongodb.GameService;
@@ -38,11 +39,33 @@ public class GameController {
                     if (auth == null || !auth.isAuthenticated()) {
                         return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
                     }
-                    // El service ya devuelve Mono<GameResponseDTO>
                     return gameService.createGame(auth.getName());
                 })
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found")));
     }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get a blackjack game by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Game found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GameResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Game not found"
+            )
+    })
+    public Mono<GameResponseDTO> getGame(
+            @PathVariable String id) {
+
+        return gameService.getGame(id);
+    }
+
 
     @PostMapping("/{id}/hit")
     @Operation(summary = "Player requests a new card")
