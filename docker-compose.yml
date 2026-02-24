@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Base de datos para el Juego (NoSQL)
   mongodb:
@@ -16,9 +14,14 @@ services:
       MYSQL_DATABASE: blackjack
       MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Tu Aplicación Blackjack
   app:
@@ -31,8 +34,10 @@ services:
       - SPRING_R2DBC_USERNAME=root
       - SPRING_R2DBC_PASSWORD=root
     depends_on:
-      - mongodb
-      - mysql
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
 
 volumes:
   mongo_data:

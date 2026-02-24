@@ -21,6 +21,9 @@ public class Deck {
     }
 
     public void shuffle(){
+        if(cards.isEmpty()){
+            throw new IllegalStateException("No cards in this deck");
+        }
         Collections.shuffle(cards);
 
     }

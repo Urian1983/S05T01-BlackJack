@@ -1,25 +1,20 @@
 package it.academy.blackjack.domain.model;
 
-
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
+
+@EqualsAndHashCode(callSuper = true)
+@Data
 @NoArgsConstructor
-@Setter
-public class Dealer extends Player{
+public class Dealer extends Player {
     public Dealer(Hand hand) {
         super("Dealer", hand);
     }
-    public boolean shouldHit(){
-        if(getHand().calculateValue()< 17)
-        {
-            return true;
-        }
 
-        else{
-            return false;
-        }
+    public boolean shouldHit() {
+        return getHand().calculateValue() < 17;
     }
+
 }

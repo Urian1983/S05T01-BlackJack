@@ -22,7 +22,6 @@ class DeckTest {
     void shouldInitializeWith52UniqueCards() {
         assertEquals(52, deck.size(), "Un mazo estándar debe tener 52 cartas");
 
-        // Verificamos que no haya duplicados usando un Set
         Set<Card> uniqueCards = new HashSet<>(deck.getCards());
         assertEquals(52, uniqueCards.size(), "Debería haber 52 cartas únicas (sin duplicados)");
     }
@@ -61,9 +60,6 @@ class DeckTest {
 
         Card firstCardAfter = deck.getCards().get(0);
         Card lastCardAfter = deck.getCards().get(51);
-
-        // Aunque estadísticamente podría coincidir, es extremadamente improbable que
-        // la primera y la última carta sigan siendo las mismas en un mazo de 52.
         assertFalse(firstCardBefore.equals(firstCardAfter) && lastCardBefore.equals(lastCardAfter),
                 "El orden de las cartas debería haber cambiado tras el shuffle");
     }

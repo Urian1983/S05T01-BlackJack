@@ -1,14 +1,14 @@
 package it.academy.blackjack.domain.model;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Data
+
 @Getter
 @NoArgsConstructor
-@Setter
+@AllArgsConstructor
 public class Player {
     private String name;
     private Hand hand;
@@ -16,29 +16,18 @@ public class Player {
 
     public Player(String name, Hand hand) {
         this.name = name;
-        this.hand = hand !=null ? hand: new Hand();
-        this.stay = false;
+        this.hand = hand != null ? hand : new Hand();
     }
-
-    public void addCardToHand(Card card){
-        this.hand.addCard(card);
-    }
-
-    public void stand(){
+    public void stand() {
         this.stay = true;
     }
-
-    public int getScore(){
+    @JsonIgnore
+    public int getScore() {
         return hand.calculateValue();
     }
-
-    public boolean isBust(){
+    @JsonIgnore
+    public boolean isBust() {
         return hand.isBust();
-    }
-
-    public void resetForNewRound(){
-        this.hand = new Hand();
-        this.stay = false;
     }
 
 }

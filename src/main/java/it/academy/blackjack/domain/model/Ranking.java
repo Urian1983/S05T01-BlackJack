@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table("player_ranking")
-public class PlayerRanking {
+public class Ranking {
 
     @Id
     private Long id;

@@ -3,14 +3,12 @@ package it.academy.blackjack.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import it.academy.blackjack.dto.GameResponseDTO;
+import it.academy.blackjack.dto.game.GameResponseDTO;
 import it.academy.blackjack.service.mongodb.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
@@ -25,15 +23,14 @@ public class GameController {
 
     private final GameService gameService;
 
-    @ResponseStatus(HttpStatus.CREATED) // 201
+    @PostMapping("/new")
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Creates a new blackjack game")
     @ApiResponse(
             responseCode = "201",
             description = "New gameplay created",
             content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
     )
-
-    @PostMapping("/new")
     public Mono<GameResponseDTO> start() {
         return ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)
@@ -41,6 +38,7 @@ public class GameController {
                     if (auth == null || !auth.isAuthenticated()) {
                         return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
                     }
+                    // El service ya devuelve Mono<GameResponseDTO>
                     return gameService.createGame(auth.getName());
                 })
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found")));
@@ -54,6 +52,7 @@ public class GameController {
             content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
     )
     public Mono<GameResponseDTO> playHit(@PathVariable String id) {
+        // Quitamos el .map(gameMapper::toDTO) porque el Service ya lo hace
         return gameService.playerHit(id);
     }
 
@@ -64,8 +63,19 @@ public class GameController {
             description = "Turn passed to the dealer",
             content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
     )
-    public Mono<GameResponseDTO> playStand(@PathVariable String id){
+    public Mono<GameResponseDTO> playStand(@PathVariable String id) {
         return gameService.playerStand(id);
+    }
+
+    @PostMapping("/{id}/doubledown")
+    @Operation(summary = "Player doubles down, receives one card and stands automatically")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Double down executed successfully",
+            content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
+    )
+    public Mono<GameResponseDTO> playDoubleDown(@PathVariable String id) {
+        return gameService.playerDoubleDown(id);
     }
 
     @DeleteMapping("/{id}/delete")
@@ -78,5 +88,5 @@ public class GameController {
     public Mono<Void> deleteGame(@PathVariable String id) {
         return gameService.deleteGame(id);
     }
-
 }
+

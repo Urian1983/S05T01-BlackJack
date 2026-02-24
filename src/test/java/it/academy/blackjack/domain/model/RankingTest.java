@@ -4,14 +4,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PlayerRankingTest {
+class RankingTest {
     @Test
     void shouldCreatePlayerRankingWithAllArgsConstructor() {
         Long id = 1L;
         String name = "John Doe";
         Integer won = 15;
 
-        PlayerRanking ranking = new PlayerRanking(id, name, won);
+        Ranking ranking = new Ranking(id, name, won);
 
         assertEquals(id, ranking.getId());
         assertEquals(name, ranking.getPlayerName());
@@ -20,7 +20,7 @@ class PlayerRankingTest {
 
     @Test
     void shouldSetAndGetFieldsCorrectly() {
-        PlayerRanking ranking = new PlayerRanking();
+        Ranking ranking = new Ranking();
 
         ranking.setId(10L);
         ranking.setPlayerName("Jane Doe");
@@ -35,9 +35,9 @@ class PlayerRankingTest {
 
     @Test
     void testEqualsAndHashCode() {
-        PlayerRanking r1 = new PlayerRanking(1L, "Player", 10);
-        PlayerRanking r2 = new PlayerRanking(1L, "Player", 10);
-        PlayerRanking r3 = new PlayerRanking(2L, "Other", 5);
+        Ranking r1 = new Ranking(1L, "Player", 10);
+        Ranking r2 = new Ranking(1L, "Player", 10);
+        Ranking r3 = new Ranking(2L, "Other", 5);
 
         assertEquals(r1, r2);
         assertNotEquals(r1, r3);
@@ -46,7 +46,7 @@ class PlayerRankingTest {
 
     @Test
     void testToString() {
-        PlayerRanking ranking = new PlayerRanking(1L, "John", 10);
+        Ranking ranking = new Ranking(1L, "John", 10);
         String result = ranking.toString();
 
         assertTrue(result.contains("John"));

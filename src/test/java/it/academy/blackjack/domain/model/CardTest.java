@@ -20,8 +20,8 @@ class CardTest {
 
         // Assert
         assertAll("Propiedades de la carta",
-                () -> assertEquals(expectedRank, card.getRank(), "El Rank no coincide"),
-                () -> assertEquals(expectedSuit, card.getSuit(), "El Suit no coincide")
+                () -> assertEquals(expectedRank, card.rank(), "El Rank no coincide"),
+                () -> assertEquals(expectedSuit, card.suit(), "El Suit no coincide")
         );
     }
 

@@ -27,4 +27,28 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public Mono<ResponseEntity<Map<String, String>>> handleNullPointer(NullPointerException ex) {
+        return Mono.just(
+                ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Required data is missing or null"))
+        );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Mono<ResponseEntity<Map<String, String>>> handleIllegalArgument(IllegalArgumentException ex) {
+        return Mono.just(
+                ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", ex.getMessage()))
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public Mono<ResponseEntity<Map<String, String>>> handleGenericException(Exception ex) {
+        return Mono.just(
+                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "An unexpected error occurred"))
+        );
+    }
+
 }

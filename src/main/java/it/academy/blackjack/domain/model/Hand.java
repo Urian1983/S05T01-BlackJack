@@ -1,53 +1,56 @@
 package it.academy.blackjack.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.academy.blackjack.domain.enums.Rank;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Hand {
 
     private List<Card> cards = new ArrayList<>();
 
     public void addCard(Card card) {
-        if(card !=null)
-            cards.add(card);
+        if (card != null) cards.add(card);
     }
 
-    public int calculateValue(){
+    @JsonProperty("score")
+    public int calculateValue() {
+        int total = 0;
+        int aces = 0;
 
-        int total = cards.stream()
-                .filter(card -> card.getRank() != null)
-                .mapToInt(card -> card.getRank().getValue())
-                .sum();
+        for (Card card : cards) {
+            if (card.rank() == Rank.ACE) {
+                aces++;
+                total += 1;
+            } else {
+                total += card.rank().getValue();
+            }
+        }
 
-        boolean hasAce = cards.stream()
-                .anyMatch(card -> card.getRank() == Rank.ACE);
-
-        if (hasAce && total + 10 <= 21) {
-            total += 10;
+        for (int i = 0; i < aces; i++) {
+            if (total + 10 <= 21) {
+                total += 10;
+            }
         }
 
         return total;
     }
 
+    @JsonProperty("isBust")
     public boolean isBust() {
         return calculateValue() > 21;
     }
 
-    public boolean isBlackJack(){
+    @JsonProperty("isBlackjack")
+    public boolean isBlackJack() {
         return cards.size() == 2 && calculateValue() == 21;
     }
 
-    public int getValue() {
-        return calculateValue();
-    }
 }
 
 
