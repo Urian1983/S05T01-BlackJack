@@ -26,9 +26,6 @@ class GameServiceImplTest {
     private GameRepository gameRepository;
 
     @Mock
-    private RankingService rankingService;
-
-    @Mock
     private GameMapper gameMapper;
 
     @InjectMocks
