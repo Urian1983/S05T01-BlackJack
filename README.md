@@ -7,6 +7,12 @@
 <a name="english-version"></a>
 # 🇬🇧 English Version
 
+In this repository you can find the Backend of a Blackjack application built with reactive Spring Boot (WebFlux) and using two databases: MongoDB and MySQL. It is responsible for the entire backend side of the application.
+
+It was developed as the solution to the first assignment of Sprint 5 at IT Academy, specifically within the Java Backend with Spring Boot specialization course.
+
+It is not a complete Blackjack application, but it does include the full backend of a simple Blackjack application. I may eventually upload a complete version with the Frontend in the future.
+
 ## 📋 Table of Contents
 
 - [Project Overview](#project-overview)
@@ -353,6 +359,8 @@ mvn test
 
 <a name="versión-en-español"></a>
 # 🇪🇸 Versión en Español
+
+En este repositorio se encuentra el Backend de una aplicación de Blackjack realizado con Spring Boot reactivo (Webflux) y utilizando dos bases de datos: MongoDB y MySQL. Se encarga de la parte del backend al completo. Se realizó cómo solucionario a la primera tarea del Sprint 5 de la IT Academy, en concreto en el curso de especialización de Java Backend con Spring Boot. No se trata de una aplicación de Blackjack completa, pero sí que es el backend completo de una aplicación de Blackjack sencilla. Es posible que termine subiendo una versión completa con el Frontend en un futuro.
 
 ## 📋 Tabla de Contenidos
 
