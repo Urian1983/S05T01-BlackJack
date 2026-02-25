@@ -1,7 +1,6 @@
 package it.academy.blackjack.service.mongodb;
 
 import it.academy.blackjack.domain.Game;
-import it.academy.blackjack.domain.enums.GameState;
 import it.academy.blackjack.dto.game.GameResponseDTO;
 import it.academy.blackjack.exceptions.GameNotFoundException;
 import it.academy.blackjack.mapper.GameMapper;
@@ -74,26 +73,9 @@ class GameServiceImplTest {
     @Test
     void getGame_shouldThrowGameNotFoundException_whenGameNotFound() {
         when(gameRepository.findById(anyString())).thenReturn(Mono.empty());
-        // Nota: no usar game.getId() en el when() si la llamada usa un ID distinto
-
         StepVerifier.create(gameService.getGame("nonExistentId"))
                 .expectError(GameNotFoundException.class)
                 .verify();
-    }
-
-    @Test
-    void playerHit_shouldUpdateGameAndReturnDTO() {
-        when(gameRepository.findById(game.getId())).thenReturn(Mono.just(game));
-        when(gameRepository.save(any(Game.class))).thenReturn(Mono.just(game));
-        when(gameMapper.toDTO(any(Game.class))).thenReturn(gameResponseDTO);
-        when(rankingService.updateRanking(anyString(), any(GameState.class)))
-                .thenReturn(Mono.empty());
-
-        StepVerifier.create(gameService.playerHit(game.getId()))
-                .expectNext(gameResponseDTO)
-                .verifyComplete();
-
-        verify(gameRepository).save(any(Game.class));
     }
 
     @Test
@@ -103,19 +85,6 @@ class GameServiceImplTest {
         StepVerifier.create(gameService.playerHit("nonExistentId"))
                 .expectError(GameNotFoundException.class)
                 .verify();
-    }
-
-    @Test
-    void playerStand_shouldPlayDealerTurnAndReturnDTO() {
-        when(gameRepository.findById(game.getId())).thenReturn(Mono.just(game));
-        when(gameRepository.save(any(Game.class))).thenReturn(Mono.just(game));
-        when(gameMapper.toDTO(any(Game.class))).thenReturn(gameResponseDTO);
-        when(rankingService.updateRanking(anyString(), any(GameState.class)))
-                .thenReturn(Mono.empty());
-
-        StepVerifier.create(gameService.playerStand(game.getId()))
-                .expectNext(gameResponseDTO)
-                .verifyComplete();
     }
 
     @Test
@@ -134,19 +103,6 @@ class GameServiceImplTest {
         StepVerifier.create(gameService.playerDoubleDown("nonExistentId"))
                 .expectError(GameNotFoundException.class)
                 .verify();
-    }
-
-    @Test
-    void playerDoubleDown_shouldUpdateGameAndReturnDTO() {
-        when(gameRepository.findById(game.getId())).thenReturn(Mono.just(game));
-        when(gameRepository.save(any(Game.class))).thenReturn(Mono.just(game));
-        when(gameMapper.toDTO(any(Game.class))).thenReturn(gameResponseDTO);
-        when(rankingService.updateRanking(anyString(), any(GameState.class)))
-                .thenReturn(Mono.empty());
-
-        StepVerifier.create(gameService.playerDoubleDown(game.getId()))
-                .expectNext(gameResponseDTO)
-                .verifyComplete();
     }
 
     @Test

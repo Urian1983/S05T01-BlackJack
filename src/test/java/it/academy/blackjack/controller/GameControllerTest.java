@@ -232,7 +232,7 @@ class GameControllerTest {
         when(gameService.deleteGame(anyString()))
                 .thenReturn(Mono.error(new GameNotFoundException("Cannot delete. Game not found.")));
 
-        webTestClient.delete()
+                webTestClient.delete()
                 .uri("/game/nonExistentId/delete")
                 .exchange()
                 .expectStatus().isNotFound();
