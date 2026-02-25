@@ -21,7 +21,8 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/webjars/**").permitAll()
-                        .pathMatchers("/game/new/**", "/player_ranking").permitAll()
+                        .pathMatchers("/game/new/**").permitAll()
+                        .pathMatchers("/player_ranking").authenticated()
                         .pathMatchers("/player_ranking/player/**").hasRole("ADMIN")
                         .pathMatchers("/game/**").authenticated()
                         .anyExchange().authenticated()

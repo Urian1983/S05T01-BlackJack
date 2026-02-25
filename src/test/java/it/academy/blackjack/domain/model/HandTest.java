@@ -2,12 +2,20 @@ package it.academy.blackjack.domain.model;
 
 import it.academy.blackjack.domain.enums.Rank;
 import it.academy.blackjack.domain.enums.Suit;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
 class HandTest {
     private Hand hand;
 

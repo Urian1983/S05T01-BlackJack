@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping ("player_ranking")
+@Validated
 @RequiredArgsConstructor
 @Tag(name = "Ranking", description = "API of players ranking")
 public class RankingController {
@@ -40,7 +42,7 @@ public class RankingController {
 
     @PutMapping("/player")
     public Mono<RankingResponseDTO> updatePlayer(
-            @Valid @RequestBody Mono<RenamePlayerDTO> requestMono) {
+            @RequestBody Mono<RenamePlayerDTO> requestMono) {
 
         return requestMono
                 .flatMap(request -> rankingService.renamePlayer(
@@ -56,8 +58,7 @@ public class RankingController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = RankingResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content)
     })
-    public Mono<RankingResponseDTO> updateRanking(
-            @RequestParam @NotBlank String playerName,
+    public Mono<RankingResponseDTO> updateRanking( @RequestParam String playerName,
             @RequestParam GameState state) {
 
         return rankingService.updateRanking(playerName, state)
