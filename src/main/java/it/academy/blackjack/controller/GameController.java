@@ -10,11 +10,10 @@ import it.academy.blackjack.dto.game.GameResponseDTO;
 import it.academy.blackjack.service.mongodb.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("game")
@@ -32,16 +31,8 @@ public class GameController {
             description = "New gameplay created",
             content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
     )
-    public Mono<GameResponseDTO> start() {
-        return ReactiveSecurityContextHolder.getContext()
-                .map(SecurityContext::getAuthentication)
-                .flatMap(auth -> {
-                    if (auth == null || !auth.isAuthenticated()) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-                    }
-                    return gameService.createGame(auth.getName());
-                })
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found")));
+    public Mono<GameResponseDTO> start(Principal principal) {
+        return gameService.createGame(principal.getName());
     }
 
     @GetMapping("/{id}")
@@ -58,12 +49,17 @@ public class GameController {
             @ApiResponse(
                     responseCode = "404",
                     description = "Game not found"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Game belongs to another player"
             )
     })
     public Mono<GameResponseDTO> getGame(
-            @PathVariable String id) {
+            @PathVariable String id,
+            Principal principal) {
 
-        return gameService.getGame(id);
+        return gameService.getGame(id, principal.getName());
     }
 
 
@@ -74,9 +70,8 @@ public class GameController {
             description = "Card dealt successfully",
             content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
     )
-    public Mono<GameResponseDTO> playHit(@PathVariable String id) {
-        // Quitamos el .map(gameMapper::toDTO) porque el Service ya lo hace
-        return gameService.playerHit(id);
+    public Mono<GameResponseDTO> playHit(@PathVariable String id, Principal principal) {
+        return gameService.playerHit(id, principal.getName());
     }
 
     @PostMapping("/{id}/stand")
@@ -86,8 +81,8 @@ public class GameController {
             description = "Turn passed to the dealer",
             content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
     )
-    public Mono<GameResponseDTO> playStand(@PathVariable String id) {
-        return gameService.playerStand(id);
+    public Mono<GameResponseDTO> playStand(@PathVariable String id, Principal principal) {
+        return gameService.playerStand(id, principal.getName());
     }
 
     @PostMapping("/{id}/doubledown")
@@ -97,8 +92,8 @@ public class GameController {
             description = "Double down executed successfully",
             content = @Content(schema = @Schema(implementation = GameResponseDTO.class))
     )
-    public Mono<GameResponseDTO> playDoubleDown(@PathVariable String id) {
-        return gameService.playerDoubleDown(id);
+    public Mono<GameResponseDTO> playDoubleDown(@PathVariable String id, Principal principal) {
+        return gameService.playerDoubleDown(id, principal.getName());
     }
 
     @DeleteMapping("/{id}/delete")
@@ -108,8 +103,7 @@ public class GameController {
             responseCode = "204",
             description = "Gameplay deleted successfully"
     )
-    public Mono<Void> deleteGame(@PathVariable String id) {
-        return gameService.deleteGame(id);
+    public Mono<Void> deleteGame(@PathVariable String id, Principal principal) {
+        return gameService.deleteGame(id, principal.getName());
     }
 }
-

@@ -2,6 +2,7 @@ package it.academy.blackjack.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
@@ -21,10 +22,10 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/webjars/**").permitAll()
-                        .pathMatchers("/game/new/**").permitAll()
-                        .pathMatchers("/player_ranking").authenticated()
-                        .pathMatchers("/player_ranking/player/**").hasRole("ADMIN")
-                        .pathMatchers("/game/**").authenticated()
+                        .pathMatchers(HttpMethod.PUT, "/player_ranking/player", "/player_ranking/player/**").hasRole("ADMIN")
+                        .pathMatchers(HttpMethod.PUT, "/player_ranking/result").hasRole("ADMIN")
+                        .pathMatchers("/player_ranking", "/player_ranking/**").authenticated()
+                        .pathMatchers("/game", "/game/**").authenticated()
                         .anyExchange().authenticated()
                 )
                 .httpBasic(it -> {})

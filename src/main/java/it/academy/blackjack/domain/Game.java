@@ -2,6 +2,7 @@ package it.academy.blackjack.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.academy.blackjack.domain.enums.GameState;
+import it.academy.blackjack.domain.model.Card;
 import it.academy.blackjack.domain.model.Dealer;
 import it.academy.blackjack.domain.model.Deck;
 import it.academy.blackjack.domain.model.Hand;
@@ -29,6 +30,13 @@ public class Game {
     @Id
     private String id = UUID.randomUUID().toString();
 
+    public Game(Player player, Dealer dealer, Deck deck, GameState state) {
+        this.player = player;
+        this.dealer = dealer;
+        this.deck = deck;
+        this.state = state;
+    }
+
     public Game(String playerName){
         this.deck = new Deck();
         this.player = new Player(playerName,new Hand());
@@ -41,10 +49,10 @@ public class Game {
     public void start(){
         deck.shuffle();
 
-        player.getHand().addCard(deck.draw());
-        dealer.getHand().addCard(deck.draw());
-        player.getHand().addCard(deck.draw());
-        dealer.getHand().addCard(deck.draw());
+        player.getHand().addCard(drawCard());
+        dealer.getHand().addCard(drawCard());
+        player.getHand().addCard(drawCard());
+        dealer.getHand().addCard(drawCard());
 
         boolean playerBlackjack = player.getHand().isBlackJack();
         boolean dealerBlackjack = dealer.getHand().isBlackJack();
@@ -53,10 +61,19 @@ public class Game {
             this.state = GameState.DRAW;
         } else if (playerBlackjack) {
             this.state = GameState.PLAYER_WIN;
+        } else if (dealerBlackjack) {
+            this.state = GameState.DEALER_WIN;
         } else {
             this.state = GameState.IN_PROGRESS;
         }
 
+    }
+
+    private Card drawCard() {
+        if (deck == null || deck.isEmpty()) {
+            throw new IllegalMoveException("No cards left in the deck");
+        }
+        return deck.draw();
     }
 
     public void playerHit(){
@@ -64,7 +81,7 @@ public class Game {
             throw new IllegalMoveException("Cannot hit. The game is already over with state: " + state);
         }
 
-        player.getHand().addCard(deck.draw());
+        player.getHand().addCard(drawCard());
 
         if (player.getHand().isBust()) {
             this.state = GameState.PLAYER_BUST;
@@ -80,7 +97,7 @@ public class Game {
             throw new IllegalMoveException("Double down is only allowed with the initial two cards.");
         }
 
-        player.getHand().addCard(deck.draw());
+        player.getHand().addCard(drawCard());
 
         if (player.getHand().isBust()) {
             this.state = GameState.PLAYER_BUST;
@@ -102,7 +119,7 @@ public class Game {
 
     public void playDealerTurn(){
         while(dealer.shouldHit()){
-            dealer.getHand().addCard(deck.draw());
+            dealer.getHand().addCard(drawCard());
         }
 
         dealer.stand();

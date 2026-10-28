@@ -21,5 +21,5 @@ public class Ranking {
 
     @Column("games_won")
     @Schema(description = "Number of gameplays won by the player", example = "15")
-    private Integer gamesWon;
+    private Integer gamesWon = 0;
 }

@@ -158,7 +158,7 @@ class RankingControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "player", roles = "PLAYER")
+    @WithMockUser(username = "admin", roles = "ADMIN")
     void updateRanking_shouldReturn200_withValidParams() {
         when(rankingService.updateRanking("topPlayer", GameState.PLAYER_WIN))
                 .thenReturn(Mono.just(rankingResponseDTO1));
@@ -178,6 +178,20 @@ class RankingControllerTest {
 
     @Test
     @WithMockUser(username = "player", roles = "PLAYER")
+    void updateRanking_shouldReturn403_whenNotAdmin() {
+        webTestClient.put()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/player_ranking/result")
+                        .queryParam("playerName", "topPlayer")
+                        .queryParam("state", "PLAYER_WIN")
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     void updateRanking_shouldReturn400_whenPlayerNameIsBlank() {
         webTestClient.put()
                 .uri(uriBuilder -> uriBuilder

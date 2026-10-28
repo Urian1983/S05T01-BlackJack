@@ -20,6 +20,12 @@ public class Deck {
                 .forEach(cards::add);
     }
 
+    public Deck(List<Card> cards) {
+        if (cards != null) {
+            this.cards.addAll(cards);
+        }
+    }
+
     public void shuffle(){
         if(cards.isEmpty()){
             throw new IllegalStateException("No cards in this deck");

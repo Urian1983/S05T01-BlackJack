@@ -1,11 +1,16 @@
 services:
   # Base de datos para el Juego (NoSQL)
   mongodb:
-    image: mongo:latest
+    image: mongo:7.0
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Base de datos para el Ranking (SQL)
   mysql:
@@ -37,7 +42,7 @@ services:
       mysql:
         condition: service_healthy
       mongodb:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   mongo_data:

@@ -6,6 +6,7 @@ import it.academy.blackjack.dto.ranking.RankingResponseDTO;
 import it.academy.blackjack.exceptions.GameNotFoundException;
 import it.academy.blackjack.mapper.RankingMapper;
 import it.academy.blackjack.repository.mysql.RankingRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,26 +29,19 @@ public class RankingServiceImpl implements RankingService {
         if (!playerWon) {
             return rankingRepository.findByPlayerName(playerName)
                     .map(rankingMapper::toDTO)
-                    .switchIfEmpty(Mono.defer(() -> {
-                        Ranking newRanking = new Ranking();
-                        newRanking.setPlayerName(playerName);
-                        newRanking.setGamesWon(0);
-                        return rankingRepository.save(newRanking)
-                                .map(rankingMapper::toDTO);
-                    }));
+                    .switchIfEmpty(Mono.defer(() -> createRanking(playerName, 0)
+                            .onErrorResume(DataIntegrityViolationException.class,
+                                    e -> rankingRepository.findByPlayerName(playerName))
+                            .map(rankingMapper::toDTO)));
         }
 
-        return rankingRepository.findByPlayerName(playerName)
-                .flatMap(ranking -> {
-                    ranking.setGamesWon(ranking.getGamesWon() + 1);
-                    return rankingRepository.save(ranking);
-                })
-                .switchIfEmpty(Mono.defer(() -> {
-                    Ranking newRanking = new Ranking();
-                    newRanking.setPlayerName(playerName);
-                    newRanking.setGamesWon(1);
-                    return rankingRepository.save(newRanking);
-                }))
+        return rankingRepository.incrementGamesWon(playerName)
+                .flatMap(updated -> updated > 0
+                        ? rankingRepository.findByPlayerName(playerName)
+                        : createRanking(playerName, 1)
+                                .onErrorResume(DataIntegrityViolationException.class,
+                                        e -> rankingRepository.incrementGamesWon(playerName)
+                                                .then(rankingRepository.findByPlayerName(playerName))))
                 .map(rankingMapper::toDTO);
     }
 
@@ -66,5 +60,12 @@ public class RankingServiceImpl implements RankingService {
     public Flux<RankingResponseDTO> getRanking() {
         return rankingRepository.findAllByOrderByGamesWonDesc()
                 .map(rankingMapper::toDTO);
+    }
+
+    private Mono<Ranking> createRanking(String playerName, int gamesWon) {
+        Ranking newRanking = new Ranking();
+        newRanking.setPlayerName(playerName);
+        newRanking.setGamesWon(gamesWon);
+        return rankingRepository.save(newRanking);
     }
 }

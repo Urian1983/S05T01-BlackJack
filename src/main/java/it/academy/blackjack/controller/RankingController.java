@@ -41,34 +41,28 @@ public class RankingController {
     }
 
     @PutMapping("/player")
+    @Operation(summary = "Rename a player (ADMIN only)")
     public Mono<RankingResponseDTO> updatePlayer(
-            @RequestBody Mono<RenamePlayerDTO> requestMono) {
+            @Valid @RequestBody RenamePlayerDTO request) {
 
-        return requestMono
-                .flatMap(request -> rankingService.renamePlayer(
-                        request.getOldName(),
-                        request.getNewName()
-                ));
+        return rankingService.renamePlayer(
+                request.getOldName(),
+                request.getNewName()
+        );
     }
 
     @PutMapping("/result")
-    @Operation(summary = "Update ranking after game result")
+    @Operation(summary = "Update ranking after game result (ADMIN only)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Ranking updated successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = RankingResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content)
     })
-    public Mono<RankingResponseDTO> updateRanking( @RequestParam String playerName,
+    public Mono<RankingResponseDTO> updateRanking(
+            @RequestParam @NotBlank String playerName,
             @RequestParam GameState state) {
 
         return rankingService.updateRanking(playerName, state)
                 .onErrorResume(e -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage())));
     }
 }
-
-
-
-
-
-
-

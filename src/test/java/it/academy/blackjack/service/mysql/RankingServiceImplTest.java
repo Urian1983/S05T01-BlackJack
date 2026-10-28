@@ -75,33 +75,40 @@ class RankingServiceImplTest {
     @Test
     @DisplayName("updateRanking: debería incrementar gamesWon cuando el jugador gana (PLAYER_WIN)")
     void updateRanking_shouldIncrementWins_whenPlayerWins() {
+        Ranking updatedRanking = new Ranking(1L, "testPlayer", 6);
         RankingResponseDTO updatedDTO = new RankingResponseDTO();
         updatedDTO.setPlayerName("testPlayer");
         updatedDTO.setGamesWon(6);
 
-        when(rankingRepository.findByPlayerName("testPlayer")).thenReturn(Mono.just(ranking));
-        when(rankingRepository.save(any(Ranking.class))).thenReturn(Mono.just(ranking));
-        when(rankingMapper.toDTO(ranking)).thenReturn(updatedDTO);
+        when(rankingRepository.incrementGamesWon("testPlayer")).thenReturn(Mono.just(1));
+        when(rankingRepository.findByPlayerName("testPlayer")).thenReturn(Mono.just(updatedRanking));
+        when(rankingMapper.toDTO(updatedRanking)).thenReturn(updatedDTO);
 
         StepVerifier.create(rankingService.updateRanking("testPlayer", GameState.PLAYER_WIN))
                 .expectNextMatches(dto -> dto.getGamesWon() == 6)
                 .verifyComplete();
 
-        verify(rankingRepository).save(argThat(r -> r.getGamesWon() == 6));
+        verify(rankingRepository).incrementGamesWon("testPlayer");
+        verify(rankingRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("updateRanking: debería incrementar gamesWon cuando el dealer se pasa (DEALER_BUST)")
     void updateRanking_shouldIncrementWins_whenDealerBusts() {
-        when(rankingRepository.findByPlayerName("testPlayer")).thenReturn(Mono.just(ranking));
-        when(rankingRepository.save(any(Ranking.class))).thenReturn(Mono.just(ranking));
-        when(rankingMapper.toDTO(ranking)).thenReturn(rankingResponseDTO);
+        Ranking updatedRanking = new Ranking(1L, "testPlayer", 6);
+        RankingResponseDTO updatedDTO = new RankingResponseDTO();
+        updatedDTO.setPlayerName("testPlayer");
+        updatedDTO.setGamesWon(6);
+
+        when(rankingRepository.incrementGamesWon("testPlayer")).thenReturn(Mono.just(1));
+        when(rankingRepository.findByPlayerName("testPlayer")).thenReturn(Mono.just(updatedRanking));
+        when(rankingMapper.toDTO(updatedRanking)).thenReturn(updatedDTO);
 
         StepVerifier.create(rankingService.updateRanking("testPlayer", GameState.DEALER_BUST))
-                .expectNext(rankingResponseDTO)
+                .expectNext(updatedDTO)
                 .verifyComplete();
 
-        verify(rankingRepository).save(argThat(r -> r.getGamesWon() == 6));
+        verify(rankingRepository).incrementGamesWon("testPlayer");
     }
 
     @Test
@@ -112,13 +119,15 @@ class RankingServiceImplTest {
         newDTO.setPlayerName("newPlayer");
         newDTO.setGamesWon(1);
 
-        when(rankingRepository.findByPlayerName("newPlayer")).thenReturn(Mono.empty());
+        when(rankingRepository.incrementGamesWon("newPlayer")).thenReturn(Mono.just(0));
         when(rankingRepository.save(any(Ranking.class))).thenReturn(Mono.just(newRanking));
         when(rankingMapper.toDTO(newRanking)).thenReturn(newDTO);
 
         StepVerifier.create(rankingService.updateRanking("newPlayer", GameState.PLAYER_WIN))
                 .expectNextMatches(dto -> dto.getGamesWon() == 1)
                 .verifyComplete();
+
+        verify(rankingRepository).save(argThat(r -> r.getGamesWon() == 1));
     }
 
     @Test
