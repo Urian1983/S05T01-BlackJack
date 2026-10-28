@@ -1,4 +1,4 @@
-# 🃏 S05T01 — BlackJack | IT Academy Backend Java
+# 🃏 Simple Blackjack
 
 > **[English](#english-version) | [Español](#versión-en-español)**
 
@@ -7,46 +7,50 @@
 <a name="english-version"></a>
 # 🇬🇧 English Version
 
-In this repository you can find the Backend of a Blackjack application built with reactive Spring Boot (WebFlux) and using two databases: MongoDB and MySQL. It is responsible for the entire backend side of the application.
+In this repository you can find the Backend of **Simple Blackjack**, a Blackjack application built with reactive Spring Boot (WebFlux) and using two databases: MongoDB and MySQL. It is responsible for the entire backend side of the application.
 
-It was developed as the solution to the first assignment of Sprint 5 at IT Academy, specifically within the Java Backend with Spring Boot specialization course.
+The project has been refactored and is now part of my portfolio.
 
-It is not a complete Blackjack application, but it does include the full backend of a simple Blackjack application. I may eventually upload a complete version with the Frontend in the future.
+Simple Blackjack is not a complete application yet, but it does include its full backend. A Frontend is planned (see [Frontend](#frontend)).
 
 ## 📋 Table of Contents
 
 - [Project Overview](#project-overview)
-- [Key Requirements](#key-requirements)
+- [Key Features](#key-features)
 - [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
 - [Architecture](#architecture)
 - [Installation & Setup](#installation--setup)
 - [API Endpoints](#api-endpoints)
 - [Security](#security)
 - [Docker Deployment](#docker-deployment)
 - [Testing](#testing)
+- [Frontend (planned)](#frontend)
 
 ---
 
+<a name="project-overview"></a>
 ## 🎯 Project Overview
 
-This project is the official solution for **Sprint 5 Task 1 (S05T01)** of the Backend Java curriculum at IT Academy. It implements a fully reactive Blackjack game engine built on **Spring Boot WebFlux**, following a non-blocking, asynchronous paradigm throughout the entire application stack.
+This project implements a fully reactive Blackjack game engine built on **Spring Boot WebFlux**, following a non-blocking, asynchronous paradigm throughout the entire application stack.
 
 Game state and sessions are persisted in **MongoDB**, while player statistics and rankings are stored in **MySQL** via R2DBC — forming a polyglot persistence architecture.
 
 ---
 
-## ✨ Key Requirements
+<a name="key-features"></a>
+## ✨ Key Features
 
-### 🔹 Level 1 — Reactive Development & Persistence
+### 🔹 Reactive Development & Persistence
 
 - **Reactive Flow:** Full implementation using `Mono` and `Flux` to ensure non-blocking execution on every layer (Controller → Service → Repository).
 - **Polyglot Persistence:**
   - **MySQL (R2DBC):** Stores player profiles and high-score rankings via Spring Data R2DBC.
   - **MongoDB (Reactive):** Stores active game sessions and document-based game state via Spring Data MongoDB Reactive.
 - **Centralized Error Handling:** A `GlobalExceptionHandler` provides consistent, reactive-friendly error responses for `GameNotFoundException`, `GameAccessDeniedException`, `IllegalMoveException`, validation errors, and general exceptions.
-- **Testing Suite:** Unit and integration tests for the Service and Controller layers using JUnit 5, Mockito, `StepVerifier`, and `WebTestClient`.
+- **Testing Suite:** Unit and slice tests for the Service and Controller layers using JUnit 5, Mockito, `StepVerifier`, and `WebTestClient`.
 
-### 🔹 Level 2 — DevOps Integration
+### 🔹 DevOps Integration
 
 - **Containerization:** Multi-stage `Dockerfile` for the Spring Boot application.
 - **Orchestration:** `docker-compose.yml` that orchestrates the app, MySQL, and MongoDB together.
@@ -54,6 +58,7 @@ Game state and sessions are persisted in **MongoDB**, while player statistics an
 
 ---
 
+<a name="technology-stack"></a>
 ## 🛠 Technology Stack
 
 | Category | Technology |
@@ -72,14 +77,20 @@ Game state and sessions are persisted in **MongoDB**, while player statistics an
 
 ---
 
+<a name="project-structure"></a>
 ## 🗂 Project Structure
 
 ```
 S05T01-BlackJack/
+├── .mvn/                  # Maven Wrapper
+├── .dockerignore
+├── .gitignore
 ├── Dockerfile
 ├── docker-compose.yml
+├── demo.http              # sample HTTP requests (empty for now)
 ├── pom.xml
 ├── mvnw / mvnw.cmd
+├── README.md
 └── src/
     ├── main/
     │   ├── java/it/academy/blackjack/
@@ -161,6 +172,7 @@ S05T01-BlackJack/
 
 ---
 
+<a name="architecture"></a>
 ## 🏗 Architecture
 
 The application follows a layered reactive architecture:
@@ -170,6 +182,7 @@ Controller (WebFlux REST)
     ↓ Mono / Flux
 Service Layer
     ├── GameServiceImpl  →  MongoDB (ReactiveMongoRepository)
+    │       └── when a game ends → RankingServiceImpl
     └── RankingServiceImpl → MySQL (R2dbcRepository)
         ↓
 Mapper (Entity ↔ DTO)
@@ -195,15 +208,18 @@ Game (MongoDB Document)
 - Dealer plays automatically after player stands (hits until ≥ 17).
 - Ace valued at 11 or 1 to avoid bust.
 - Double Down only allowed on initial 2-card hand.
+- The dealer's second (hole) card is hidden in API responses while the game is `IN_PROGRESS`.
+- When a game ends, the ranking is updated automatically: `PLAYER_WIN` and `DEALER_BUST` add a win; a loss registers the player with 0 wins if they are not in the ranking yet; a `DRAW` leaves the ranking untouched.
 
 ---
 
+<a name="installation--setup"></a>
 ## 🚀 Installation & Setup
 
 ### Prerequisites
 
 - Java 21+
-- Maven 3.9+
+- Maven 3.9+ (optional: the project includes the Maven Wrapper, `./mvnw`)
 - Docker & Docker Compose (for containerized setup)
 - A running MySQL 8.0 instance on port `3307` (the default local configuration; Docker Compose maps `3307` to the container's `3306`)
 - A running MongoDB instance on port `27017`
@@ -233,12 +249,16 @@ Game (MongoDB Document)
    ```bash
    mvn clean install
    mvn spring-boot:run
+
+   # or with the Maven Wrapper (no local Maven needed):
+   ./mvnw spring-boot:run
    ```
 
 4. **Access Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 ---
 
+<a name="api-endpoints"></a>
 ## 📡 API Endpoints
 
 ### 🃏 Game Management — `/game` (MongoDB)
@@ -252,13 +272,19 @@ Game (MongoDB Document)
 | `POST` | `/game/{id}/doubledown` | Double down (initial 2 cards only) | Yes |
 | `DELETE` | `/game/{id}/delete` | Delete a game record | Yes |
 
+**Status codes:** `201` on `/game/new`, `200` on game actions, `204` on delete, `400` for illegal moves or invalid input, `403` when the game belongs to another player, `404` when it does not exist and `500` for unexpected errors. Every error uses the same body:
+
+```json
+{ "error": "Cannot hit. The game is already over with state: PLAYER_WIN" }
+```
+
 ### 🏆 Player Rankings — `/player_ranking` (MySQL)
 
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
 | `GET` | `/player_ranking` | Get global leaderboard (desc by wins) | Yes (any role) |
-| `PUT` | `/player_ranking/player` | Rename a player | Yes (ADMIN only) |
-| `PUT` | `/player_ranking/result` | Update ranking after a game result | Yes (ADMIN only) |
+| `PUT` | `/player_ranking/player` | Rename a player (body: `oldName`, `newName`) | Yes (ADMIN only) |
+| `PUT` | `/player_ranking/result` | Manually adjust the ranking with a game result (query: `playerName`, `state`). Normally not needed: the ranking is updated automatically when a game ends | Yes (ADMIN only) |
 
 **Example: Create a new game**
 ```http
@@ -274,6 +300,7 @@ Authorization: Basic cGxheWVyOnBsYXllcjEyMzQ=
 
 ---
 
+<a name="security"></a>
 ## 🔒 Security
 
 The API uses **HTTP Basic Authentication** managed by Spring Security.
@@ -287,7 +314,7 @@ Two default users are pre-configured in memory:
 
 **Authorization rules:**
 
-- `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**` → Public
+- `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**`, `/webjars/**` → Public
 - `/game`, `/game/**` → Any authenticated user
 - `GET /player_ranking` → Any authenticated user
 - `PUT /player_ranking/player` → `ADMIN` only
@@ -296,9 +323,11 @@ Two default users are pre-configured in memory:
 Game sessions are bound to the authenticated player: `GET`, `HIT`, `STAND`, `DOUBLE DOWN`, and `DELETE` only work for the owner of the game and return `403` otherwise. A missing game returns `404`, while invalid moves return `400`.
 
 > Passwords are stored using **BCrypt** hashing.
+> Users are hardcoded in `SecurityConfig` for demonstration purposes; replace them before any real deployment.
 
 ---
 
+<a name="docker-deployment"></a>
 ## 🐳 Docker Deployment
 
 The application is fully containerized and available on Docker Hub.
@@ -337,6 +366,7 @@ docker run -p 8080:8080 \
 
 ---
 
+<a name="testing"></a>
 ## 🧪 Testing
 
 The test suite covers the domain, Mapper, Service, and Controller layers with unit and slice tests. It runs without any external database: MySQL/R2DBC is replaced by **H2 in memory** and the MongoDB repository is mocked, so no MongoDB instance is needed.
@@ -363,47 +393,60 @@ mvn test
 > The suite currently runs **73 tests** with `mvn test`, with no external services required. Controller slice tests use `@WebFluxTest` + `WebTestClient` and the context test uses the `test` profile (H2 for R2DBC and a mocked Mongo repository).
 
 ---
+
+<a name="frontend"></a>
+## 🖥 Frontend (planned)
+
+A frontend client for this API is planned but **not implemented yet**. This section will be updated when it is added. In the meantime, the API can be explored through Swagger UI ([http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)).
+
+---
 ---
 
 <a name="versión-en-español"></a>
 # 🇪🇸 Versión en Español
 
-En este repositorio se encuentra el Backend de una aplicación de Blackjack realizado con Spring Boot reactivo (Webflux) y utilizando dos bases de datos: MongoDB y MySQL. Se encarga de la parte del backend al completo. Se realizó cómo solucionario a la primera tarea del Sprint 5 de la IT Academy, en concreto en el curso de especialización de Java Backend con Spring Boot. No se trata de una aplicación de Blackjack completa, pero sí que es el backend completo de una aplicación de Blackjack sencilla. Es posible que termine subiendo una versión completa con el Frontend en un futuro.
+En este repositorio se encuentra el Backend de **Simple Blackjack**, una aplicación de Blackjack realizada con Spring Boot reactivo (Webflux) y utilizando dos bases de datos: MongoDB y MySQL. Se encarga de la parte del backend al completo. El proyecto ha sido refactorizado y ahora forma parte de mi portfolio.
+
+Simple Blackjack todavía no es una aplicación completa, pero sí incluye su backend completo. Está previsto añadir un Frontend (ver [Frontend](#frontend-es)).
 
 ## 📋 Tabla de Contenidos
 
 - [Descripción del Proyecto](#descripción-del-proyecto)
-- [Requisitos Clave](#requisitos-clave)
+- [Características Principales](#características-principales)
 - [Stack Tecnológico](#stack-tecnológico)
+- [Estructura del Proyecto](#estructura-del-proyecto)
 - [Arquitectura](#arquitectura)
 - [Instalación y Configuración](#instalación-y-configuración)
 - [Endpoints de la API](#endpoints-de-la-api)
 - [Seguridad](#seguridad)
 - [Despliegue con Docker](#despliegue-con-docker)
-- [Testing](#testing)
+- [Testing](#testing-es)
+- [Frontend (planificado)](#frontend-es)
 
 ---
 
+<a name="descripción-del-proyecto"></a>
 ## 🎯 Descripción del Proyecto
 
-Este proyecto es la solución oficial para el **Sprint 5 Tarea 1 (S05T01)** del currículo de Backend Java de IT Academy. Implementa un motor de juego de Blackjack completamente reactivo construido sobre **Spring Boot WebFlux**, siguiendo un paradigma no bloqueante y asíncrono en toda la pila de la aplicación.
+Este proyecto implementa un motor de juego de Blackjack completamente reactivo construido sobre **Spring Boot WebFlux**, siguiendo un paradigma no bloqueante y asíncrono en toda la pila de la aplicación.
 
 El estado y las sesiones de juego se persisten en **MongoDB**, mientras que las estadísticas y el ranking de jugadores se almacenan en **MySQL** mediante R2DBC, formando una arquitectura de persistencia políglota.
 
 ---
 
-## ✨ Requisitos Clave
+<a name="características-principales"></a>
+## ✨ Características Principales
 
-### 🔹 Nivel 1 — Desarrollo Reactivo y Persistencia
+### 🔹 Desarrollo Reactivo y Persistencia
 
 - **Flujo Reactivo:** Implementación completa usando `Mono` y `Flux` para garantizar la ejecución no bloqueante en cada capa (Controlador → Servicio → Repositorio).
 - **Persistencia Políglota:**
   - **MySQL (R2DBC):** Almacena perfiles de jugadores y clasificaciones mediante Spring Data R2DBC.
   - **MongoDB (Reactivo):** Almacena sesiones de juego activas y el estado en formato de documento mediante Spring Data MongoDB Reactive.
 - **Manejo Centralizado de Errores:** Un `GlobalExceptionHandler` proporciona respuestas de error consistentes y compatibles con el paradigma reactivo para `GameNotFoundException`, `GameAccessDeniedException`, `IllegalMoveException`, errores de validación y excepciones genéricas.
-- **Suite de Tests:** Tests unitarios e de integración para las capas de Servicio y Controlador usando JUnit 5, Mockito, `StepVerifier` y `WebTestClient`.
+- **Suite de Tests:** Tests unitarios y de slice para las capas de Servicio y Controlador usando JUnit 5, Mockito, `StepVerifier` y `WebTestClient`.
 
-### 🔹 Nivel 2 — Integración DevOps
+### 🔹 Integración DevOps
 
 - **Contenerización:** `Dockerfile` multi-etapa para la aplicación Spring Boot.
 - **Orquestación:** `docker-compose.yml` que orquesta la app, MySQL y MongoDB conjuntamente.
@@ -411,6 +454,7 @@ El estado y las sesiones de juego se persisten en **MongoDB**, mientras que las 
 
 ---
 
+<a name="stack-tecnológico"></a>
 ## 🛠 Stack Tecnológico
 
 | Categoría | Tecnología |
@@ -429,14 +473,20 @@ El estado y las sesiones de juego se persisten en **MongoDB**, mientras que las 
 
 ---
 
+<a name="estructura-del-proyecto"></a>
 ## 🗂 Estructura del Proyecto
 
 ```
 S05T01-BlackJack/
+├── .mvn/                  # Maven Wrapper
+├── .dockerignore
+├── .gitignore
 ├── Dockerfile
 ├── docker-compose.yml
+├── demo.http              # sample HTTP requests (empty for now)
 ├── pom.xml
 ├── mvnw / mvnw.cmd
+├── README.md
 └── src/
     ├── main/
     │   ├── java/it/academy/blackjack/
@@ -518,6 +568,7 @@ S05T01-BlackJack/
 
 ---
 
+<a name="arquitectura"></a>
 ## 🏗 Arquitectura
 
 La aplicación sigue una arquitectura reactiva en capas:
@@ -527,6 +578,7 @@ Controlador (REST con WebFlux)
     ↓ Mono / Flux
 Capa de Servicio
     ├── GameServiceImpl  →  MongoDB (ReactiveMongoRepository)
+    │       └── when a game ends → RankingServiceImpl
     └── RankingServiceImpl → MySQL (R2dbcRepository)
         ↓
 Mapper (Entity ↔ DTO)
@@ -552,15 +604,18 @@ Game (Documento MongoDB)
 - El crupier juega automáticamente después de que el jugador se plante (pide cartas hasta ≥ 17).
 - El As vale 11 o 1 para evitar pasarse.
 - El Double Down solo se permite con las 2 cartas iniciales.
+- La segunda carta del crupier (carta oculta) no se muestra en las respuestas de la API mientras la partida está `IN_PROGRESS`.
+- Al terminar una partida, el ranking se actualiza automáticamente: `PLAYER_WIN` y `DEALER_BUST` suman una victoria; una derrota registra al jugador con 0 victorias si aún no está en el ranking; un `DRAW` no modifica el ranking.
 
 ---
 
+<a name="instalación-y-configuración"></a>
 ## 🚀 Instalación y Configuración
 
 ### Requisitos Previos
 
 - Java 21+
-- Maven 3.9+
+- Maven 3.9+ (opcional: el proyecto incluye el Maven Wrapper, `./mvnw`)
 - Docker y Docker Compose (para configuración contenerizada)
 - Una instancia de MySQL 8.0 en ejecución en el puerto `3307` (configuración local por defecto; Docker Compose mapea `3307` al `3306` del contenedor)
 - Una instancia de MongoDB en ejecución en el puerto `27017`
@@ -590,12 +645,16 @@ Game (Documento MongoDB)
    ```bash
    mvn clean install
    mvn spring-boot:run
+
+   # o con el Maven Wrapper (sin instalar Maven):
+   ./mvnw spring-boot:run
    ```
 
 4. **Acceder a Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 ---
 
+<a name="endpoints-de-la-api"></a>
 ## 📡 Endpoints de la API
 
 ### 🃏 Gestión del Juego — `/game` (MongoDB)
@@ -609,16 +668,23 @@ Game (Documento MongoDB)
 | `POST` | `/game/{id}/doubledown` | Doblar (solo con las 2 cartas iniciales) | Sí |
 | `DELETE` | `/game/{id}/delete` | Eliminar un registro de partida | Sí |
 
+**Códigos de estado:** `201` en `/game/new`, `200` en las acciones de juego, `204` al borrar, `400` para movimientos ilegales o datos inválidos, `403` si la partida pertenece a otro jugador, `404` si no existe y `500` para errores inesperados. Todos los errores usan el mismo cuerpo:
+
+```json
+{ "error": "Cannot hit. The game is already over with state: PLAYER_WIN" }
+```
+
 ### 🏆 Ranking de Jugadores — `/player_ranking` (MySQL)
 
 | Método | Endpoint | Descripción | Auth Requerida |
 |---|---|---|---|
 | `GET` | `/player_ranking` | Obtener la clasificación global (desc. por victorias) | Sí (cualquier rol) |
-| `PUT` | `/player_ranking/player` | Renombrar un jugador | Sí (solo ADMIN) |
-| `PUT` | `/player_ranking/result` | Actualizar el ranking tras el resultado de una partida | Sí (solo ADMIN) |
+| `PUT` | `/player_ranking/player` | Renombrar un jugador (body: `oldName`, `newName`) | Sí (solo ADMIN) |
+| `PUT` | `/player_ranking/result` | Ajustar manualmente el ranking con un resultado (query: `playerName`, `state`). Normalmente no hace falta: el ranking se actualiza solo al terminar una partida | Sí (solo ADMIN) |
 
 ---
 
+<a name="seguridad"></a>
 ## 🔒 Seguridad
 
 La API utiliza **Autenticación HTTP Basic** gestionada por Spring Security.
@@ -632,7 +698,7 @@ Dos usuarios por defecto están preconfigurados en memoria:
 
 **Reglas de autorización:**
 
-- `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**` → Público
+- `/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**`, `/webjars/**` → Público
 - `/game`, `/game/**` → Cualquier usuario autenticado
 - `GET /player_ranking` → Cualquier usuario autenticado
 - `PUT /player_ranking/player` → Solo `ADMIN`
@@ -641,9 +707,11 @@ Dos usuarios por defecto están preconfigurados en memoria:
 Las partidas están vinculadas al jugador autenticado: `GET`, `HIT`, `STAND`, `DOUBLE DOWN` y `DELETE` solo funcionan para el dueño de la partida y devuelven `403` en caso contrario. Una partida inexistente devuelve `404`, mientras que un movimiento inválido devuelve `400`.
 
 > Las contraseñas se almacenan con hash **BCrypt**.
+> Los usuarios están definidos en `SecurityConfig` solo con fines de demostración; hay que sustituirlos antes de cualquier despliegue real.
 
 ---
 
+<a name="despliegue-con-docker"></a>
 ## 🐳 Despliegue con Docker
 
 La aplicación está completamente contenerizada y disponible en Docker Hub.
@@ -682,6 +750,7 @@ docker run -p 8080:8080 \
 
 ---
 
+<a name="testing-es"></a>
 ## 🧪 Testing
 
 La suite de tests cubre las capas de dominio, Mapper, Servicio y Controlador con tests unitarios y de slice. Se ejecuta sin ninguna base de datos externa: MySQL/R2DBC se sustituye por **H2 en memoria** y el repositorio de MongoDB se mockea, por lo que no hace falta una instancia de MongoDB.
@@ -706,3 +775,10 @@ mvn test
 | `RankingTest` | Test unitario | JUnit 5 |
 
 > La suite ejecuta actualmente **73 tests** con `mvn test`, sin necesidad de servicios externos. Los tests de slice de controlador usan `@WebFluxTest` + `WebTestClient` y el test de contexto usa el perfil `test` (H2 para R2DBC y el repositorio de Mongo mockeado).
+
+---
+
+<a name="frontend-es"></a>
+## 🖥 Frontend (planificado)
+
+El cliente frontend para esta API está planificado pero **aún no está implementado**. Esta sección se actualizará cuando se añada. Mientras tanto, la API se puede explorar desde Swagger UI ([http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)).
